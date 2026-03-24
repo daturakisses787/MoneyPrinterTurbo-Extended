@@ -1214,9 +1214,13 @@ def azure_tts_v1(
                 return sub_maker
 
             sub_maker = asyncio.run(_do())
-            if not sub_maker or not sub_maker.subs:
-                logger.warning("failed, sub_maker is None or sub_maker.subs is None")
+            if not sub_maker:
+                logger.warning("failed, sub_maker is None")
                 continue
+            if not sub_maker.subs:
+                # edge-tts 7.x sends SentenceBoundary instead of WordBoundary,
+                # so subs may be empty — audio file is still written correctly
+                logger.warning("sub_maker.subs is empty (no WordBoundary events), continuing without word timing")
 
             logger.info(f"completed, output file: {voice_file}")
             return sub_maker
